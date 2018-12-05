@@ -71,7 +71,7 @@ class Game:
         line(1000,0,1000,self.g)
         self.zoom.display()
         
-g = Game(1024,768,668)
+g = Game(1024,768,667)
 
 def setup():
     size(g.w, g.h)
