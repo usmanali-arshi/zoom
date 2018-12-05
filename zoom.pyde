@@ -62,16 +62,17 @@ class Game:
         self.w=w
         self.h=h
         self.g=g
-        
+        self.img= loadImage(path+"/images/background.png")
         self.zoom = zoom(512,768,-50,"zoom.png",300,620,self.g)
         
     def display(self):
-        stroke(255)
-        line(20,0,20,self.g)
-        line(1000,0,1000,self.g)
-        self.zoom.display()
         
-g = Game(1024,768,667)
+        image(self.img,0,0)
+    
+        self.zoom.display()
+  
+        
+g = Game(1024,768,668)
 
 def setup():
     size(g.w, g.h)
