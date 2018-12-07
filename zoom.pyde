@@ -7,7 +7,8 @@ class Car:
         self.x=x
         self.y=y
         self.r=r
-    
+        self.s=100
+        self.l=1000
         self.w=w
         self.h=h
         self.vx=0
@@ -30,7 +31,7 @@ class Car:
     def display(self):
         self.update()
         
-        image(self.img,self.x-self.w//2,self.y-self.h//2+30,self.w - 200,self.h - 400,0,0,self.w,self.h)
+        image(self.img,self.x-self.w//6,self.y-self.h//6-g.y,self.w/3,self.h/3,0,0,self.w,self.h)
     
 class zoom(Car):
     def __init__(self,x,y,r,img,w,h,g):
@@ -41,33 +42,40 @@ class zoom(Car):
 
         if self.keyHandler[UP]:
             self.vy = -5
-        elif self.keyHandler[DOWN]:
-            self.vy = 5
         else:
             self.vy = 0
 
-        if self.keyHandler[RIGHT]:
+        if self.keyHandler[RIGHT] and self.x+self.r< self.l:
             self.vx = 12
-        elif self.keyHandler[LEFT]:
+        elif self.keyHandler[LEFT] and self.x+self.r> self.s :
             self.vx = -12
         else:
             self.vx = 0
         
         self.y += self.vy
         self.x += self.vx
+        
+        print self.y
+        
+        if self.y <= g.h // 2:
+            g.y += self.vy
+
 
 
 class Game:
     def __init__ (self,w,h,g):
         self.w=w
         self.h=h
+        self.y =0
         self.g=g
         self.img= loadImage(path+"/images/background.png")
         self.zoom = zoom(512,768,-50,"zoom.png",300,620,self.g)
         
     def display(self):
+        y= (self.y)% self.h
+        image(self.img,0,0,self.w,self.h-y,0,y,self.w,self.h)
+        image(self.img,0,self.h-y,self.w,y,0,0,self.w,y)
         
-        image(self.img,0,0)
     
         self.zoom.display()
   
