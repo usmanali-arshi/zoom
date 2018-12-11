@@ -2,28 +2,28 @@ import time
 import os, random
 path = os.getcwd()
 
+
 class Car:
-    def __init__ (self,x,y,r,img,w,h,g):
+    def __init__ (self,x,y,img,w,h,g):
         self.x=x
         self.y=y
-        self.r=r
-        self.s=100
-        self.l=1000
         self.w=w
         self.h=h
         self.vx=0
         self.vy=0
         self.g=g
         self.img = loadImage(path+"/images/"+img)
+        
+        
+        
 
         
     def update(self):
-        if self.y+self.r >= self.g:
+        if self.y>= self.g:
             self.vy=0
         else:
             self.vy += 0.3
-            if self.y + self.r + self.vy > self.g:
-                self.vy = self.g - (self.y+self.r)
+
         
         self.x += self.vx
         self.y += self.vy
@@ -31,23 +31,29 @@ class Car:
     def display(self):
         self.update()
         
-        image(self.img,self.x-self.w//6,self.y-self.h//6-g.y,self.w/3,self.h/3,0,0,self.w,self.h)
+        image(self.img,self.x,self.y-g.y,self.w,self.h,0,0,self.w,self.h)
     
 class zoom(Car):
-    def __init__(self,x,y,r,img,w,h,g):
-        Car.__init__(self,x,y,r,img,w,h,g)
+    def __init__(self,x,y,img,w,h,g):
+        Car.__init__(self,x,y,img,w,h,g)
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
+   
+        self.health=3
+    
+        
         
     def update(self):
-
         if self.keyHandler[UP]:
-            self.vy = -5
+            self.vy = -12
         else:
             self.vy = 0
+    
 
-        if self.keyHandler[RIGHT] and self.x+self.r< self.l:
+
+
+        if self.keyHandler[RIGHT] and self.x< g.l:
             self.vx = 12
-        elif self.keyHandler[LEFT] and self.x+self.r> self.s :
+        elif self.keyHandler[LEFT] and self.x> g.s :
             self.vx = -12
         else:
             self.vx = 0
@@ -55,29 +61,90 @@ class zoom(Car):
         self.y += self.vy
         self.x += self.vx
         
-        print self.y
+        # print self.y
         
         if self.y <= g.h // 2:
             g.y += self.vy
+        
+        # print self.x
+        fill(255)
+        #line(self.x,self.y-g.y,self.x+self.w,self.y)
 
+        
+    
+        
+        #for t in g.traffic:
+            #fill(255)
+            #line(t.x,t.y-g.y,t.x+t.w,t.y)
+            #if t.x-t.w/2<(self.x-self.w/2)<t.x+t.w/2 and t.y-t.h/2< (self.y-self.h/2)<t.y-t.h/2:
+                #del t
+                #self.health-=1
+                #if self.health==0:
+                    #g.__init__(1024,768,668)
+class policecar(Car):
+    def __init__(self,x,y,img,w,h,g):
+        Car.__init__(self,x,y,img,w,h,g)
+        self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
+        #self.vy = random.randint(-8,-6)
+        
+    def update(self):
+        self.y += self.vy
+        self.x += self.vx
+        
+        if self.keyHandler[RIGHT] and self.x< g.l:
+            self.vx = 12
+    
+        elif self.keyHandler[LEFT] and self.x> g.s :
+            self.vx = -12
+        else:
+            self.vx = 0
+        if g.gameStarted:
+            if self.keyHandler[UP]:
+                self.vy = -12
+            else:
+                self.vy = -8      
+            
+class Traffic(Car):
+    def __init__(self,x,y,img,w,h,g):
+        Car.__init__(self,x,y,img,w,h,g) 
+        self.x= random.randint(100,900)
+        self.y= y
+    def update(self):
+        self.y += self.vy
+        self.x += self.vx
 
 
 class Game:
     def __init__ (self,w,h,g):
         self.w=w
         self.h=h
+        self.s=100
+        self.l=self.w-100
         self.y =0
         self.g=g
         self.img= loadImage(path+"/images/background.png")
-        self.zoom = zoom(512,768,-50,"zoom.png",300,620,self.g)
+        self.zoom = zoom(512,600,"zoom.png",100,200,self.g)
+        self.policecar = policecar(512,968,"policecar.png",100,200,self.g)
+        self.gameStarted= False
+        
+        self.traffic=[]
+        for i in range(20):
+            self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
+            
+        # for t in self.traffic:
+        #     print (t.x,t.y) 
         
     def display(self):
         y= (self.y)% self.h
         image(self.img,0,0,self.w,self.h-y,0,y,self.w,self.h)
         image(self.img,0,self.h-y,self.w,y,0,0,self.w,y)
         
-    
+        self.policecar.display()
         self.zoom.display()
+    
+        
+        for t in self.traffic:
+            t.display()
   
         
 g = Game(1024,768,668)
@@ -96,7 +163,16 @@ def keyPressed():
         g.zoom.keyHandler[RIGHT] = True
     elif keyCode == UP:
         g.zoom.keyHandler[UP] = True
-
+        g.gameStarted=True
+        
+        
+    if keyCode == RIGHT:
+        g.policecar.keyHandler[RIGHT] = True
+    elif keyCode == LEFT:
+        g.policecar.keyHandler[LEFT] = True
+    
+    if keyCode == UP:
+        g.policecar.keyHandler[UP] = True
         
 def keyReleased():
     if keyCode == LEFT:
@@ -105,3 +181,12 @@ def keyReleased():
         g.zoom.keyHandler[RIGHT] = False
     elif keyCode == UP:
         g.zoom.keyHandler[UP] = False
+        
+        
+    if keyCode == RIGHT:
+        g.policecar.keyHandler[RIGHT] = False
+    elif keyCode == LEFT:
+        g.policecar.keyHandler[LEFT] = False
+        
+    if keyCode == UP:
+        g.policecar.keyHandler[UP] = False
