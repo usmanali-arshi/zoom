@@ -92,6 +92,16 @@ class zoom(Car):
                 self.health-=1
                 if self.health==0:
                     g.state= "gameover"
+                    
+        
+        for r in g.hearts:
+            print(r.y)
+            if r.y-r.h < self.y < r.y+r.h  and r.x+r.w > self.x and r.x < self.x + self.w:
+                g.hearts.remove(r)
+                del r
+                self.health+=1
+            
+            
                 
                     
 class policecar(Car):
@@ -125,6 +135,17 @@ class Traffic(Car):
     def update(self):
         self.y += self.vy
         self.x += self.vx
+        
+class Hearts(Car):
+    def __init__(self,x,y,img,w,h,g):
+        Car.__init__(self,x,y,img,w,h,g)
+        #check if the traffic and hearts are colliding if they are randomise again
+        self.x= random.randint(100,900)
+        self.y=random.randint(-3000,-500)
+    def update(self):
+        self.y += self.vy
+        self.x += self.vx
+
 
 
 class Game:
@@ -146,13 +167,13 @@ class Game:
         for i in range(20):
             self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
             
-        #self.hearts = []
-        #for i in range(5):
+        self.hearts = []
+        for i in range(5):
+            self.hearts.append(Hearts(300+i*100,300-i*400, "heart.png",50,50,self.g))
             
             
         # for t in self.traffic:
         #     print (t.x,t.y) 
-        
     def display(self):
         y= (self.y)% self.h
         image(self.img,0,0,self.w,self.h-y,0,y,self.w,self.h)
@@ -164,7 +185,9 @@ class Game:
         
         for t in self.traffic:
             t.display()
-  
+            
+        for h in self.hearts:
+            h.display()  
         
 g = Game(1024,768,668)
 
