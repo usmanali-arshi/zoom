@@ -100,6 +100,13 @@ class zoom(Car):
                 g.hearts.remove(r)
                 del r
                 self.health+=1
+        
+        
+        t = g.policecar
+        if t.y-t.h < self.y < t.y+t.h  and t.x+t.w > self.x and t.x < self.x + self.w:
+                self.health=0
+                if self.health==0:
+                    g.state= "gameover"
             
             
                 
