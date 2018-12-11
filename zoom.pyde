@@ -32,6 +32,7 @@ class Car:
         self.update()
         
         image(self.img,self.x,self.y-g.y,self.w,self.h,0,0,self.w,self.h)
+        #rect(self.x,self.y-g.y,self.w,self.h)
     
 class zoom(Car):
     def __init__(self,x,y,img,w,h,g):
@@ -71,16 +72,27 @@ class zoom(Car):
         #line(self.x,self.y-g.y,self.x+self.w,self.y)
 
         
-    
-        
         #for t in g.traffic:
+            #print t.y, g.y
+            # if g.y < t.y:
+                # print "dd"
+                # g.traffic.remove(t)
+                # del t
+            
+        
+        for t in g.traffic:
+            # print t.y, g.y    
             #fill(255)
-            #line(t.x,t.y-g.y,t.x+t.w,t.y)
-            #if t.x-t.w/2<(self.x-self.w/2)<t.x+t.w/2 and t.y-t.h/2< (self.y-self.h/2)<t.y-t.h/2:
-                #del t
-                #self.health-=1
-                #if self.health==0:
-                    #g.__init__(1024,768,668)
+            # line(t.x,t.y-g.y-20,t.x+t.w,t.y-g.y-20)
+            if t.y-t.h < self.y < t.y+t.h  and t.x+t.w > self.x and t.x < self.x + self.w:
+                
+                print"col",self.health, #self.y, t.y+t.h
+                g.traffic.remove(t)
+                del t
+                self.health-=1
+                # if self.health==0:
+                #     g.__init__(1024,768,668)
+                    
 class policecar(Car):
     def __init__(self,x,y,img,w,h,g):
         Car.__init__(self,x,y,img,w,h,g)
@@ -128,7 +140,7 @@ class Game:
         self.gameStarted= False
         
         self.traffic=[]
-        for i in range(20):
+        for i in range(5):
             self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
             
         # for t in self.traffic:
