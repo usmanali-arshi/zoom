@@ -90,8 +90,9 @@ class zoom(Car):
                 g.traffic.remove(t)
                 del t
                 self.health-=1
-                # if self.health==0:
-                #     g.__init__(1024,768,668)
+                if self.health==0:
+                    g.state= "gameover"
+                
                     
 class policecar(Car):
     def __init__(self,x,y,img,w,h,g):
@@ -132,16 +133,22 @@ class Game:
         self.h=h
         self.s=100
         self.l=self.w-100
+        self.state= "menu"
         self.y =0
         self.g=g
         self.img= loadImage(path+"/images/background.png")
+        self.img1= loadImage(path+"/images/menu.jpg")
         self.zoom = zoom(512,600,"zoom.png",100,200,self.g)
         self.policecar = policecar(512,968,"policecar.png",100,200,self.g)
         self.gameStarted= False
         
         self.traffic=[]
-        for i in range(5):
+        for i in range(20):
             self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
+            
+        #self.hearts = []
+        #for i in range(5):
+            
             
         # for t in self.traffic:
         #     print (t.x,t.y) 
@@ -165,8 +172,23 @@ def setup():
     size(g.w, g.h)
     
 def draw():
-    background(0)
-    g.display()
+    if g.state== "menu":
+        image(g.img1,0,0)
+        
+        
+        fill(255,0,0)
+        textSize(40)
+        fill(255)
+        
+        text("Press Shift to Play the Game", g.w//2.5,g.h//3)
+    elif g.state=="play":
+        background(0)    
+        g.display()
+    
+    elif g.state== "gameover":
+        textSize(50)
+        fill (255,0,0)
+        text("GAME OVER",g.w//2.5, g.h//3)
 
 def keyPressed():
     if keyCode == LEFT:
@@ -177,6 +199,8 @@ def keyPressed():
         g.zoom.keyHandler[UP] = True
         g.gameStarted=True
         
+    if keyCode == 16:
+        g.state= "play"    
         
     if keyCode == RIGHT:
         g.policecar.keyHandler[RIGHT] = True
