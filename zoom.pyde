@@ -325,4 +325,4 @@ def keyReleased():
         g.policecar.keyHandler[LEFT] = False
         
     if keyCode == UP:
-g.policecar.keyHandler[UP] = False
+        g.policecar.keyHandler[UP] = False
