@@ -135,7 +135,9 @@ class Traffic(Car):
     def update(self):
         self.y += self.vy
         self.x += self.vx
-        
+#display nothing for a part of time annd disable collision for bomb 
+#time.time saves the value of current time
+#start.time compare with the currect time and if difference become certain value enable the things again
 class Hearts(Car):
     def __init__(self,x,y,img,w,h,g):
         Car.__init__(self,x,y,img,w,h,g)
