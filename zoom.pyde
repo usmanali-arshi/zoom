@@ -35,15 +35,17 @@ class zoom(Car):
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
         self.bombcnt=0
         self.health=3
+        self.boostervalue = False
     
         
         
     def update(self):
-        if self.keyHandler[UP]:
+        if self.keyHandler[UP] and self.boostervalue == True:
+            self.vy = -16
+        elif self.keyHandler[UP]:
             self.vy = -12
-            if self.y<-15000: #level:2 starts and speeds up the game
-                self.vy=-16
-
+        elif self.y<-15000: #level:2 starts and speeds up the game
+                self.vy=-18
         else:
             self.vy = 0
     
@@ -80,6 +82,15 @@ class zoom(Car):
                 g.hearts.remove(r)
                 del r
                 self.health+=1
+                
+        #update of boosters
+        for k in g.boosters:
+            #collision of car with hearts so that it can collect it
+            if k.y-k.h < self.y < k.y+k.h  and k.x+k.w > self.x and k.x < self.x + self.w:
+                g.boosters.remove(k)
+                del k
+                self.boostervalue = True
+                self.img = loadImage(path+"/images/boost.png")
         
         #checking the collision of police car with the Zoom
         t = g.policecar
@@ -108,7 +119,6 @@ class zoom(Car):
             print(elapsed_time)
             if elapsed_time > 3:
                 g.start_time=0
-                
                 g.bombstate= False
 #TODO after you use bombs three times the elapsed time doesnt change (fix)
                         
@@ -191,7 +201,22 @@ class Hearts(Car):
         self.y += self.vy
         self.x += self.vx
 
-
+class Boosters(Car):
+    def __init__(self,x,y,img,w,h,g):
+        Car.__init__(self,x,y,img,w,h,g)
+        self.x= random.randint(100,900)
+        self.y=random.randint(-3000,-500)
+        self.checkCollision()
+        
+    def checkCollision(self):
+        for v in g.boosters:
+             if v.y-v.h < self.y < v.y+v.h  and v.x+v.w > self.x and v.x < self.x + self.w:
+                 self.x= random.randint(100,900)
+                 self.y= random.randint(-3000,-500)
+                 
+    def update(self):
+        self.y += self.vy
+        self.x += self.vx
 
 class Game:
     def __init__ (self,w,h,g):
@@ -220,6 +245,8 @@ class Game:
             self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
             
         self.hearts = []
+        
+        self.boosters = []
 
         
         self.bombs =[]
@@ -233,6 +260,11 @@ class Game:
     def createHearts(self):
         for i in range(5):
             self.hearts.append(Hearts(300+i*100,300-i*300, "heart.png",50,50,self.g))
+    
+    #creating boosters
+    def createBoosters(self):
+        for p in range(5):
+            self.boosters.append(Boosters(300+p*100,300-p*300, "boost.png",150,100,self.g))
 
         
 #looping the background image to keep them in the frame        
@@ -260,6 +292,12 @@ class Game:
         for b in self.hearts:
             if b.y > self.zoom.y + self.h/2 :
                 b.y = b.y -random.randint(2000,4000)
+                
+        #loops through the boosters and send them above if they are below the bottom of the game
+        for o in self.boosters:
+            if o.y > self.zoom.y + self.h/2 :
+                o.y = o.y -random.randint(2000,4000)        
+        
          #loops through the bombs and send them above if they are below the bottom of the game
         for z in self.bombs:
             if z.y > self.zoom.y + self.h/2 :
@@ -268,12 +306,15 @@ class Game:
         
         for h in self.hearts:
             h.display()
+        for e in self.boosters:
+            e.display()
         for b in self.bombs:
             b.display()
         
 g = Game(1024,1024,668)
 g.createBombs()
 g.createHearts()
+g.createBoosters()
 
 def setup():
     size(g.w, g.h)
