@@ -39,9 +39,12 @@ class zoom(Car):
         self.level=1                                                    # level when the game starts
         self.crashmusic = player.loadFile(path+"/sounds/crash.mp3")     #crashing sound when the car collides with other cars
         self.boosterValue = False
+        self.comeback = False                                          #to blink the car before all the traffic comes back
         
     def display(self):
         self.update()
+        if self.comeback == True and time.time() % 0.25 < 0.125:        #blinking logic
+            return
         image(loadImage(path+"/images/"+g.carState),self.x,self.y-g.y,self.w,self.h,0,0,self.w,self.h)  #Isomorphism using g.carstate so that the main car (zoom) can change its display to its respective state(Booster or Zoom)      
     
     def update(self):
@@ -145,12 +148,16 @@ class zoom(Car):
                       #g.usedbomb to fix the bug that turned the bomb count to 0 even if the space was pressed once
         if g.bombstate== True:
             elapsed_time = time.time() - g.start_time                #calculates the elapsed time after spacebar is pressed
+            
+            
             if g.usedBomb == True:
                 self.bombcnt=self.bombcnt-1                          #as soon as the bomb is used the count decreases
                 g.usedBomb= False
-                
+            if elapsed_time > 2:                                     
+                self.comeback = True
             if elapsed_time > 3:                                     #using time to use the bombfeature in the game
                 g.start_time=0
+                self.comeback = False
                 
                 g.bombstate= False
 
@@ -187,6 +194,7 @@ class Traffic(Car):
         Car.__init__(self,x,y,img,w,h,g) 
         self.x= random.randint(100,900)
         self.y= y
+        self.checkCollision()
     #if changing random x gives u the collision with another traffic car then give another x
      #checking collision with all other objects so no overlapping occurs      
     def checkCollision(self):
@@ -202,6 +210,13 @@ class Traffic(Car):
                     break
             for b in g.boosters:
                 if b.y-b.h < self.y < b.y+b.h  and b.x+b.w > self.x and b.x < self.x + self.w:
+                    collisionHappened = True
+                    break
+            tmptraffic = []+g.traffic                 #to create a temp list so that it doesnt end up in an infinite loop and check that it doesnt overlap
+            if self in tmptraffic:
+                tmptraffic.remove(self)
+            for t in tmptraffic:
+                if t.y-t.h < self.y < t.y+t.h  and t.x+t.w > self.x and t.x < self.x + self.w:
                     collisionHappened = True
                     break
             if collisionHappened:
@@ -368,14 +383,15 @@ class Game:
         self.gameStarted= False
         
         self.traffic=[]
-        for i in range(20):
-            self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
-            
+
         self.hearts = []
         
         self.boosters = []
         
         self.bombs =[]
+    def createTraffic(self):
+        for i in range(20):
+            self.traffic.append(Traffic(400+i*100,400-i*300,str(i%4)+".png",100,200,self.g))
         
     #creating bombs and appending to the list
     def createBombs(self):
@@ -434,6 +450,7 @@ class Game:
             b.display()
         
 g = Game(1024,1024,668)
+g.createTraffic()
 g.createBombs()
 g.createHearts()
 g.createBoosters()
@@ -446,17 +463,17 @@ def draw():
         image(g.img1,0,0)
         
         
-        fill(255,0,0)
-        textSize(50)
         fill(255)
+        textSize(50)
+    
         
-        text("Press Shift to Play the Game", g.w//3,g.h//2.5)
-        text("Press Ctrl to Read the Instructions",g.w//5,g.h//2)
+        text("Press Shift to Play the Game", 20,g.h//2.5+50)
+        text("Press Ctrl to Read the Instructions",20,g.h//2)
     elif g.state=="instructions":
         image(g.img2,0,0,1024,1024)
         fill(255)
         textSize(23)
-        text("Hello Welcome to Zoom \nYou need to evade the traffic and outrun the police which is chasing. \nYou start with 3 lives. Everytime you hit a Car you lose a life.\nThe more distance you survive, the more you'll Score.\nThere are two Levels:\n Level:1 Your car and police car moves at the same Speed\nLevel:2 The police car is slowly catching up to you and the game speed is also increased. \nYou can collect the following items:", 10,100)
+        text("Hello Welcome to Zoom \nYou need to evade the traffic and outrun the police which is chasing. \nYou start with 3 lives. Everytime you hit a Car you lose a life.\nThe more distance you survive, the more you'll Score.\nThere are two Levels:\nLevel:1 Your car and police car moves at the same Speed\nLevel:2 The police car is slowly catching up to you and the game speed is also increased. \nYou can collect the following items:", 10,100)
         image(g.imgh,10,350,100,100)
         text("You can collect Hearts to Increase Your Health.",120,410)
         image(g.imgb,10,470,100,100)
@@ -487,6 +504,7 @@ def draw():
         fill (255,0,0)
         text("YOU CRASHED!",200,800)
         text("Score: "+str(end_distance),200,870)
+        g.policecar.police.pause()
     
     
     elif g.state== "gameoverbypolice":
@@ -496,6 +514,8 @@ def draw():
         fill (255,0,0)
         text("BUSTED!",300,800)
         text("Score: "+str(end_distance),300,900)
+        g.policecar.police.pause()
+        
     
 
 def keyPressed():
