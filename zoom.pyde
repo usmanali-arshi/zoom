@@ -1,6 +1,5 @@
 import time
 import os, random
-
 add_library('minim')
 path = os.getcwd()
 player = Minim(this)
@@ -16,7 +15,6 @@ class Car:
         self.vy=0
         self.g=g
         self.img = loadImage(path+"/images/"+img)
-        self.music = 0
                 
     def update(self):
         if self.y>= self.g:
@@ -55,12 +53,8 @@ class zoom(Car):
     def update(self):
         if self.keyHandler[UP] and self.boosterValue == True:
             self.vy = -16
-            self.music = player.loadFile(path+"/sounds/police.mp3")
-            self.music.play()
         elif self.keyHandler[UP]:
             self.vy = -12
-            self.music = player.loadFile(path+"/sounds/police.mp3")
-            self.music.play()
         elif self.y<-15000: #level:2 starts and speeds up the game
                 self.vy=-18
                 self.level=2
@@ -83,8 +77,7 @@ class zoom(Car):
         #update of traffic    
         if g.bombstate== False:
             for t in g.traffic:
-               #collision thoery if the Zoom(main car) hits the traffic
-                
+               #collision thoery if the Zoom(main car) hits the traffic 
                 if t.y-t.h < self.y < t.y+t.h  and t.x+t.w > self.x and t.x < self.x + self.w:
                     g.traffic.remove(t)
                     del t
@@ -172,6 +165,7 @@ class policecar(Car):
     def __init__(self,x,y,img,w,h,g):
         Car.__init__(self,x,y,img,w,h,g)
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
+        self.police = player.loadFile(path+"/sounds/police.mp3")
         #self.vy = random.randint(-8,-6)
         
     def update(self):
@@ -188,6 +182,7 @@ class policecar(Car):
         if g.gameStarted:
             if self.keyHandler[UP]:
                 self.vy = -12
+                self.police.play()
                 if self.y<-15000:#police also increases speed and start chasing more fast after level 2
                     self.vy=-16.2
             else:
@@ -270,9 +265,9 @@ class Game:
         self.y =0
         self.usedBomb = False
         self.boosterCheck=2
+        self.g=g
         self.music = player.loadFile(path+"/sounds/music.mp3")
         self.music.play()
-        self.g=g
         self.img= loadImage(path+"/images/background.png")
         self.img1= loadImage(path+"/images/menu.jpg")
         self.img2= loadImage(path+"/images/instructions.jpeg")
@@ -402,7 +397,9 @@ def draw():
         textSize(50)
         fill (255,0,0)
         text("GAME OVER",g.w//2.5, g.h//3)
-        text("Score: "+str(end_distance),g.w//3+80,g.h//3+100) 
+        text("Score: "+str(end_distance),g.w//3+80,g.h//3+100)
+        textSize(20) 
+        text("Press Esc to go back to the menu again",20,980)
 
 def keyPressed():
     if keyCode == LEFT:
@@ -415,7 +412,7 @@ def keyPressed():
     if keyCode==17:
         g.state="instructions"
 #Press Shift to Play the Game        
-    if keyCode == 16:
+    if keyCode == 16 and g.state=="menu":
         g.state= "play"    
 #The user can press space to use the bomb which it collected        
     if keyCode == 32 and g.zoom.bombcnt > 0:
