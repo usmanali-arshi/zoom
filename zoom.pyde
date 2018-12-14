@@ -47,6 +47,14 @@ class zoom(Car):
         #     self.img = loadImage(path+"/images/boost.png")
         # else:
         #     self.img = loadImage(path+"/images/zoom.png")
+        
+    def display(self):
+        self.update()
+        #if g.carState=="boost.png" :
+        image(loadImage(path+"/images/"+g.carState),self.x,self.y-g.y,self.w,self.h,0,0,self.w,self.h)
+        # else:
+        #     image(loadImage(path+"/images/"+img),self.x,self.y-g.y,self.w,self.h,0,0,self.w,self.h)
+        
     
         
         
@@ -70,7 +78,7 @@ class zoom(Car):
         
         self.y += self.vy
         self.x += self.vx
-        #print self.y
+        print self.vy
         
         if self.y <= g.h // 2:
             g.y += self.vy
@@ -105,12 +113,15 @@ class zoom(Car):
                 g.boosters.remove(p)
                 del p
                 self.boosterValue = True
+                g.carState= "boost.png"
             
                 print g.boosterCheck
-                self.img = loadImage(path+"/images/boost.png")
-                if g.boosterCheck==0:
-                    print("hey")
-                    #self.boosterValue= False
+                #self.img = loadImage(path+"/images/boost.png")
+            if g.boosterCheck==0:
+                print("hey")
+                self.boosterValue= False
+                g.carState="zoom.png"
+                g.boosterCheck=2
                 
                 
                 # self.bs_distance= self.y
@@ -266,6 +277,7 @@ class Game:
         self.usedBomb = False
         self.boosterCheck=2
         self.g=g
+        self.carState="zoom.png"
         self.music = player.loadFile(path+"/sounds/music.mp3")
         self.music.play()
         self.img= loadImage(path+"/images/background.png")
