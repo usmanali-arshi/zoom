@@ -1,6 +1,8 @@
 import time
 import os, random
+add_library('minim')
 path = os.getcwd()
+player = Minim(this)
 
 #Level 2 starts after 16000 distance travelling and things get speed up
 class Car:
@@ -34,18 +36,28 @@ class zoom(Car):
         Car.__init__(self,x,y,img,w,h,g)
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
         self.bombcnt=0
-        self.health=3
-        self.boostervalue = False
+        self.health=3 #at start the car's health is 3
+        self.level=1
+        # self.boosterCheck=2
+        #self.bs_distance=0
+        # self.bl_distance=0
+        self.boosterValue = False
+        # if self.boosterValue==True:
+            
+        #     self.img = loadImage(path+"/images/boost.png")
+        # else:
+        #     self.img = loadImage(path+"/images/zoom.png")
     
         
         
     def update(self):
-        if self.keyHandler[UP] and self.boostervalue == True:
+        if self.keyHandler[UP] and self.boosterValue == True:
             self.vy = -16
         elif self.keyHandler[UP]:
             self.vy = -12
         elif self.y<-15000: #level:2 starts and speeds up the game
                 self.vy=-18
+                self.level=2
         else:
             self.vy = 0
     
@@ -58,7 +70,7 @@ class zoom(Car):
         
         self.y += self.vy
         self.x += self.vx
-        print self.y
+        #print self.y
         
         if self.y <= g.h // 2:
             g.y += self.vy
@@ -69,8 +81,10 @@ class zoom(Car):
                 if t.y-t.h < self.y < t.y+t.h  and t.x+t.w > self.x and t.x < self.x + self.w:
                     g.traffic.remove(t)
                     del t
+                    g.boosterCheck-=1
                     #decreasing the health by 1 everytime it hits the traffic car
                     self.health-=1 
+                    
                     #game over condition when the health of car is 0
                     if self.health==0:
                         g.state= "gameover"
@@ -83,14 +97,33 @@ class zoom(Car):
                 del r
                 self.health+=1
                 
+                
         #update of boosters
-        for k in g.boosters:
-            #collision of car with hearts so that it can collect it
-            if k.y-k.h < self.y < k.y+k.h  and k.x+k.w > self.x and k.x < self.x + self.w:
-                g.boosters.remove(k)
-                del k
-                self.boostervalue = True
+        for p in g.boosters:
+            #collision of car with boosters so that it can collect it
+            if p.y-p.h < self.y < p.y+p.h  and p.x+p.w > self.x and p.x < self.x + self.w:
+                g.boosters.remove(p)
+                del p
+                self.boosterValue = True
+            
+                print g.boosterCheck
                 self.img = loadImage(path+"/images/boost.png")
+                if g.boosterCheck==0:
+                    print("hey")
+                    #self.boosterValue= False
+                
+                
+                # self.bs_distance= self.y
+                # self.bl_distance= self.bs_distance-1000
+                # print self.y, self.bl_distance
+                # if self.y<self.bl_distance:
+                #     print("hey")
+                #     self.boosterValue=False
+                
+                
+                
+                
+
         
         #checking the collision of police car with the Zoom
         t = g.policecar
@@ -119,6 +152,7 @@ class zoom(Car):
             print(elapsed_time)
             if elapsed_time > 3:
                 g.start_time=0
+                
                 g.bombstate= False
 #TODO after you use bombs three times the elapsed time doesnt change (fix)
                         
@@ -131,6 +165,7 @@ class policecar(Car):
     def __init__(self,x,y,img,w,h,g):
         Car.__init__(self,x,y,img,w,h,g)
         self.keyHandler = {LEFT:False, RIGHT:False, UP:False, DOWN:False}
+        self.police = player.loadFile(path+"/sounds/police.mp3")
         #self.vy = random.randint(-8,-6)
         
     def update(self):
@@ -147,6 +182,7 @@ class policecar(Car):
         if g.gameStarted:
             if self.keyHandler[UP]:
                 self.vy = -12
+                self.police.play()
                 if self.y<-15000:#police also increases speed and start chasing more fast after level 2
                     self.vy=-16.2
             else:
@@ -201,22 +237,23 @@ class Hearts(Car):
         self.y += self.vy
         self.x += self.vx
 
+
 class Boosters(Car):
     def __init__(self,x,y,img,w,h,g):
         Car.__init__(self,x,y,img,w,h,g)
         self.x= random.randint(100,900)
         self.y=random.randint(-3000,-500)
         self.checkCollision()
-        
+    
     def checkCollision(self):
         for v in g.boosters:
              if v.y-v.h < self.y < v.y+v.h  and v.x+v.w > self.x and v.x < self.x + self.w:
                  self.x= random.randint(100,900)
                  self.y= random.randint(-3000,-500)
-                 
     def update(self):
         self.y += self.vy
         self.x += self.vx
+
 
 class Game:
     def __init__ (self,w,h,g):
@@ -227,10 +264,13 @@ class Game:
         self.state= "menu"
         self.y =0
         self.usedBomb = False
-        
+        self.boosterCheck=2
         self.g=g
+        self.music = player.loadFile(path+"/sounds/music.mp3")
+        self.music.play()
         self.img= loadImage(path+"/images/background.png")
         self.img1= loadImage(path+"/images/menu.jpg")
+        self.img2= loadImage(path+"/images/instructions.jpeg")
         self.start_distance=0
         self.zoom = zoom(512,600,"zoom.png",100,200,self.g)
         self.imgh= loadImage(path+"/images/heart.png")
@@ -247,11 +287,9 @@ class Game:
         self.hearts = []
         
         self.boosters = []
-
         
         self.bombs =[]
         
-        print("hyyy")
     #creating bombs and appending to the list
     def createBombs(self):
         for b in range (3):
@@ -260,11 +298,10 @@ class Game:
     def createHearts(self):
         for i in range(5):
             self.hearts.append(Hearts(300+i*100,300-i*300, "heart.png",50,50,self.g))
-    
     #creating boosters
     def createBoosters(self):
-        for p in range(5):
-            self.boosters.append(Boosters(300+p*100,300-p*300, "boost.png",150,100,self.g))
+        for f in range(3):
+            self.boosters.append(Boosters(300+f*100,300-f*300, "boost.png",150,100,self.g))
 
         
 #looping the background image to keep them in the frame        
@@ -292,22 +329,21 @@ class Game:
         for b in self.hearts:
             if b.y > self.zoom.y + self.h/2 :
                 b.y = b.y -random.randint(2000,4000)
-                
-        #loops through the boosters and send them above if they are below the bottom of the game
-        for o in self.boosters:
-            if o.y > self.zoom.y + self.h/2 :
-                o.y = o.y -random.randint(2000,4000)        
-        
          #loops through the bombs and send them above if they are below the bottom of the game
         for z in self.bombs:
             if z.y > self.zoom.y + self.h/2 :
                 z.y = z.y-4000
-            
+        
+        #loops through the bombs and send them above if they are below the bottom of the game
+        for v in self.boosters:
+            if v.y > self.zoom.y + self.h/2 :
+                v.y = v.y-4000
+                
         
         for h in self.hearts:
             h.display()
-        for e in self.boosters:
-            e.display()
+        for t in self.boosters:
+            t.display()
         for b in self.bombs:
             b.display()
         
@@ -325,10 +361,22 @@ def draw():
         
         
         fill(255,0,0)
-        textSize(40)
+        textSize(50)
         fill(255)
         
-        text("Press Shift to Play the Game", g.w//2.5,g.h//3)
+        text("Press Shift to Play the Game", g.w//3,g.h//2.5)
+        text("Press Ctrl to Read the Instructions",g.w//5,g.h//2)
+    elif g.state=="instructions":
+        image(g.img2,0,0,1024,1024)
+        fill(255)
+        textSize(23)
+        text("Hello Welcome to Zoom \nYou need to evade the traffic and outrun the police which is chasing. \nYou start with 3 lives. Everytime you hit a Car you lose a life.\nThe more distance you survive, the more you'll Score.\nThere are two Levels:\n Level:1 Your car and police car moves at the same Speed\nLevel:2 The police car is slowly catching up to you and the game speed is also increased. \nYou can collect the following items:", 10,100)
+        image(g.imgh,10,350,100,100)
+        text("You can collect Hearts to Increase Your Health.",120,410)
+        image(g.imgb,10,470,100,100)
+        text("Use them to blast off the traffic for 3 seconds. \nPress Spacebar to use the Bomb!",120,520)
+        textSize(20)
+        text("Press BackSpace to return to the menu",500,950)
     elif g.state=="play":
         background(0)    
         
@@ -339,6 +387,9 @@ def draw():
         textSize(40)
         text(":"+str(g.zoom.health),85,40)
         text(":"+str(g.zoom.bombcnt),85,90)
+        textSize(30)
+        text("Level: "+str(g.zoom.level),880,40)
+        
         
     
     elif g.state== "gameover":
@@ -346,7 +397,9 @@ def draw():
         textSize(50)
         fill (255,0,0)
         text("GAME OVER",g.w//2.5, g.h//3)
-        text("Score: "+str(end_distance),g.w//3+80,g.h//3+100) 
+        text("Score: "+str(end_distance),g.w//3+80,g.h//3+100)
+        textSize(20) 
+        text("Press Esc to go back to the menu again",20,980)
 
 def keyPressed():
     if keyCode == LEFT:
@@ -356,14 +409,18 @@ def keyPressed():
     elif keyCode == UP:
         g.zoom.keyHandler[UP] = True
         g.gameStarted=True
-        
-    if keyCode == 16:
+    if keyCode==17:
+        g.state="instructions"
+#Press Shift to Play the Game        
+    if keyCode == 16 and g.state=="menu":
         g.state= "play"    
 #The user can press space to use the bomb which it collected        
     if keyCode == 32 and g.zoom.bombcnt > 0:
         g.bombstate= True
         g.usedBomb = True
         g.start_time= time.time()
+    if keyCode==8:
+        g.state="menu"
  
         
     if keyCode == RIGHT:
