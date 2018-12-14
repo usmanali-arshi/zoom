@@ -80,6 +80,7 @@ class zoom(Car):
         self.x += self.vx
         print self.vy
         
+        
         if self.y <= g.h // 2:
             g.y += self.vy
         #update of traffic    
@@ -411,7 +412,7 @@ def draw():
         text("GAME OVER",g.w//2.5, g.h//3)
         text("Score: "+str(end_distance),g.w//3+80,g.h//3+100)
         textSize(20) 
-        text("Press Esc to go back to the menu again",20,980)
+        text("Press Backspace to go back to the menu again",20,980)
 
 def keyPressed():
     if keyCode == LEFT:
@@ -421,7 +422,7 @@ def keyPressed():
     elif keyCode == UP:
         g.zoom.keyHandler[UP] = True
         g.gameStarted=True
-    if keyCode==17:
+    if keyCode==17 and g.state=="menu":
         g.state="instructions"
 #Press Shift to Play the Game        
     if keyCode == 16 and g.state=="menu":
@@ -431,7 +432,9 @@ def keyPressed():
         g.bombstate= True
         g.usedBomb = True
         g.start_time= time.time()
-    if keyCode==8:
+    if keyCode==8 and g.state=="instructions":
+        g.state="menu"
+    if keyCode==8 and g.state=="gameover":
         g.state="menu"
  
         
